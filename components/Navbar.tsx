@@ -95,9 +95,6 @@ export default function Navbar() {
                       تسجيل الدخول
                     </Button>
                   </Link>
-                  <Link href="/signup" prefetch={false}>
-                    <Button size="sm">التسجيل</Button>
-                  </Link>
                 </div>
               )}
               <DropdownMenu>
@@ -152,18 +149,11 @@ export default function Navbar() {
                       <DropdownMenuItem onClick={handleLogout}>تسجيل الخروج</DropdownMenuItem>
                     </>
                   ) : (
-                    <>
                       <DropdownMenuItem>
                         <Link href="/login" prefetch={false}>
                           تسجيل الدخول
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Link href="/signup" prefetch={false}>
-                          التسجيل
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
