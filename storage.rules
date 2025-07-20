@@ -1,0 +1,28 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the user is an admin
+    // This assumes you have set 'admin: true' custom claim for admin users
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Allow anyone to read images in the 'products' folder
+    match /products/{productId}/{fileName} {
+      allow read: if true;
+      // Allow only admins to write (upload/delete) images in the 'products' folder
+      allow write: if isAdmin();
+    }
+
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
