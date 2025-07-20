@@ -2,13 +2,32 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { getProducts, type Product } from "@/lib/firestore" // Import getProducts
+import { getProducts, type Product } from "@/lib/firestore"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useCartStore } from "@/store/cart" // Import the cart store
+import { useCartStore } from "@/store/cart"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
+import dynamic from "next/dynamic"
+
+const Carousel = dynamic(() => import("@/components/ui/carousel/Carousel"), {
+  loading: () => <p className="w-full h-[500px] bg-gray-200 animate-pulse"></p>,
+})
+
+const CarouselButtons = dynamic(
+  () => import("@/components/ui/carousel/CarouselButtons"),
+  {
+    loading: () => <p className="w-full h-full bg-gray-100 animate-pulse"></p>,
+  }
+)
+
+const CarouselDots = dynamic(
+  () => import("@/components/ui/carousel/CarouselDots"),
+  {
+    loading: () => <p className="w-full h-full bg-gray-100 animate-pulse"></p>,
+  }
+)
 
 export default function HomePage() {
   const [latestProducts, setLatestProducts] = useState<Product[]>([])
@@ -101,24 +120,25 @@ export default function HomePage() {
         ) : latestProducts.length === 0 ? (
           <p className="text-gray-500 text-center">لا توجد منتجات جديدة لعرضها حاليًا.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {latestProducts.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`}>
+          <Carousel
+            data={latestProducts}
+            CustomCard={({ id, name, price, stock, images, description, category, createdAt, updatedAt }: Product) => (
+              <Link href={`/products/${id}`}>
                 <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
                   <CardContent className="p-4 flex flex-col items-center text-center">
                     <div className="w-full h-48 relative mb-4">
                       <Image
-                        src={product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg"}
-                        alt={product.name}
+                        src={images && images.length > 0 ? images[0] : "/placeholder.svg"}
+                        alt={name}
                         fill
                         style={{ objectFit: "contain" }}
                         className="rounded-md"
                       />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{product.name}</h3>
-                    <p className="text-xl font-bold text-gray-800">{product.price.toFixed(2)} جنيه</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{name}</h3>
+                    <p className="text-xl font-bold text-gray-800">{price.toFixed(2)} جنيه</p>
                     <p className="text-sm text-gray-500 mt-2">
-                      {product.stock > 0 ? `متوفر: ${product.stock}` : "نفد المخزون"}
+                      {stock > 0 ? `متوفر: ${stock}` : "نفد المخزون"}
                     </p>
                   </CardContent>
 
@@ -126,15 +146,21 @@ export default function HomePage() {
                     <Button
                       variant="outline"
                       className="w-full"
-                      onClick={(e) => addToCart(e, product)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart(e, { id, name, price, stock, images, description, category, createdAt, updatedAt });
+                      }}
                     >
                       إضافة إلى السلة
                     </Button>
                   </CardFooter>
                 </Card>
               </Link>
-            ))}
-          </div>
+            )}
+            CarouselButtons={CarouselButtons}
+            CarouselDots={CarouselDots}
+          />
         )}
       </section>
 
